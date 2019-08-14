@@ -55,7 +55,6 @@ import org.apache.gobblin.stream.StreamEntity;
 import org.apache.gobblin.util.AvroUtils;
 import org.apache.gobblin.util.FinalState;
 import org.apache.gobblin.writer.partitioner.WriterPartitioner;
-import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
 
 
 /**
