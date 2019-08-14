@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.gobblin.stream.MetadataUpdateControlMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -220,6 +221,11 @@ public class Fork<S, D> implements Closeable, FinalState, RecordStreamConsumer<S
           // Nack with error and reraise the error if the control messsage handling raises an error.
           // This is to avoid missing an ack/nack in the error path.
           try {
+            /*if (r instanceof MetadataUpdateControlMessage)
+            {
+              taskContext.getTaskState().setProp("task.latest.schema", ((MetadataUpdateControlMessage) r)
+                  .getGlobalMetadata().getSchema());
+            }*/
             this.writer.get().getMessageHandler().handleMessage((ControlMessage) r);
           } catch (Throwable error) {
             r.nack(error);
@@ -530,6 +536,7 @@ public class Fork<S, D> implements Closeable, FinalState, RecordStreamConsumer<S
   private DataWriter<Object> buildWriter()
       throws IOException {
     String writerId = this.taskId;
+    logger.info("$$$start build writer");
 
     // Add the task starting time if configured.
     // This is used to reduce file name collisions which can happen due to the execution of a workunit across multiple

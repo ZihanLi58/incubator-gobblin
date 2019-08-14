@@ -367,6 +367,7 @@ public class TaskContext {
     log.debug("Using property {} to get a writer builder for branches:{}, index:{}", writerBuilderPropertyName,
         branches, index);
 
+    log.info("$$$get writer builder");
     String dataWriterBuilderClassName = this.taskState.getProp(writerBuilderPropertyName, null);
     if (dataWriterBuilderClassName == null) {
       dataWriterBuilderClassName = ConfigurationKeys.DEFAULT_WRITER_BUILDER_CLASS;
