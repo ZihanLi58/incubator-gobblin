@@ -55,6 +55,7 @@ import org.apache.gobblin.stream.StreamEntity;
 import org.apache.gobblin.util.AvroUtils;
 import org.apache.gobblin.util.FinalState;
 import org.apache.gobblin.writer.partitioner.WriterPartitioner;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
 
 
 /**
@@ -324,11 +325,7 @@ public class PartitionedDataWriter<S, D> extends WriterWrapper<D> implements Fin
       if (message instanceof MetadataUpdateControlMessage) {
         PartitionedDataWriter.this.writerBuilder.withSchema(((MetadataUpdateControlMessage) message)
             .getGlobalMetadata().getSchema());
-<<<<<<< HEAD
         state.setProp(WRITER_LATEST_SCHEMA, ((MetadataUpdateControlMessage) message)
-=======
-        state.setProp(TASK_LATEST_SCHEMA, ((MetadataUpdateControlMessage) message)
->>>>>>> let writer pass latest schema to WorkUnitState
             .getGlobalMetadata().getSchema());
       }
 
