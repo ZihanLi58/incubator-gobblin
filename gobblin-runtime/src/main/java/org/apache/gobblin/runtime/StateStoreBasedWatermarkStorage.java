@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.gobblin.configuration.ConfigurationKeys;
 import org.apache.gobblin.configuration.State;
+import org.apache.gobblin.metastore.DatasetStateStore;
 import org.apache.gobblin.metastore.StateStore;
 import org.apache.gobblin.source.extractor.CheckpointableWatermark;
 import org.apache.gobblin.util.ClassAliasResolver;
@@ -52,7 +53,7 @@ public class StateStoreBasedWatermarkStorage implements WatermarkStorage {
   public static final String WATERMARK_STORAGE_CONFIG_PREFIX="streaming.watermarkStateStore.config.";
   private static final String WATERMARK_STORAGE_PREFIX="streamingWatermarks:";
 
-  public final StateStore<CheckpointableWatermarkState> _stateStore;
+  public final DatasetStateStore<CheckpointableWatermarkState> _stateStore;
   private final String _storeName;
 
   /**
@@ -83,9 +84,9 @@ public class StateStoreBasedWatermarkStorage implements WatermarkStorage {
     Preconditions.checkArgument(taskState != null);
     Preconditions.checkArgument(!taskState.getProp(ConfigurationKeys.JOB_NAME_KEY).isEmpty());
     String watermarkStateStoreType = taskState.getProp(WATERMARK_STORAGE_TYPE_KEY, WATERMARK_STORAGE_TYPE_DEFAULT);
-    ClassAliasResolver<StateStore.Factory> resolver =
-        new ClassAliasResolver<>(StateStore.Factory.class);
-    StateStore.Factory stateStoreFactory;
+    ClassAliasResolver<DatasetStateStore.Factory> resolver =
+        new ClassAliasResolver<>(DatasetStateStore.Factory.class);
+    DatasetStateStore.Factory stateStoreFactory;
 
     try {
       stateStoreFactory = resolver.resolveClass(watermarkStateStoreType).newInstance();
@@ -98,7 +99,7 @@ public class StateStoreBasedWatermarkStorage implements WatermarkStorage {
     }
 
     Config config = getStateStoreConfig(taskState);
-    _stateStore = stateStoreFactory.createStateStore(config, CheckpointableWatermarkState.class);
+    _stateStore = stateStoreFactory.createStateStore(config);
     _storeName = WATERMARK_STORAGE_PREFIX + taskState.getProp(ConfigurationKeys.JOB_NAME_KEY);
     log.info("State Store directory configured as : {}", config.getString(ConfigurationKeys.STATE_STORE_ROOT_DIR_KEY));
     log.info("Configured the StateStoreBasedWatermarkStorage with storeName: {}", _storeName);
