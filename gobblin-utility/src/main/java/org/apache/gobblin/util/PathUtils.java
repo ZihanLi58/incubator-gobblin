@@ -22,18 +22,26 @@ import java.net.URI;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import com.google.common.base.Strings;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hadoop.fs.PathFilter;
 
 
 @Slf4j
 public class PathUtils {
 
   public static final Pattern GLOB_TOKENS = Pattern.compile("[,\\?\\*\\[\\{]");
+  final private static PathFilter DEFAULT_FILTER = new PathFilter() {
+    @Override
+    public boolean accept(Path file) {
+      return true;
+    }
+  };
 
   public static Path mergePaths(Path path1, Path path2) {
     String path2Str = path2.toUri().getPath();
@@ -207,5 +215,9 @@ public class PathUtils {
    */
   public static boolean compareWithoutSchemeAndAuthority(Path path1, Path path2) {
     return PathUtils.getPathWithoutSchemeAndAuthority(path1).equals(getPathWithoutSchemeAndAuthority(path2));
+  }
+
+  public static FileStatus[] globStatus(Path pattern, FileSystem fs) throws IOException {
+    return new Globber(fs, pattern, DEFAULT_FILTER).glob();
   }
 }

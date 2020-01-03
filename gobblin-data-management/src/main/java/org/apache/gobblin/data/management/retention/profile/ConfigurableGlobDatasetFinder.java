@@ -156,7 +156,7 @@ public abstract class ConfigurableGlobDatasetFinder<T extends Dataset> implement
    * @throws IOException
    */
   protected FileStatus[] getDatasetDirs() throws IOException {
-    return this.fs.globStatus(this.datasetPattern);
+    return PathUtils.globStatus(this.datasetPattern, this.fs);
   }
   /**
    * Returns the deepest non-glob ancestor of the dataset pattern.
