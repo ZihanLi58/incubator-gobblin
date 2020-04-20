@@ -50,6 +50,14 @@ import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.server.MiniYARNCluster;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttempt;
 import org.apache.hadoop.yarn.server.utils.BuilderUtils;
+import org.apache.helix.HelixDataAccessor;
+import org.apache.helix.HelixManager;
+import org.apache.helix.HelixManagerFactory;
+import org.apache.helix.InstanceType;
+import org.apache.helix.PropertyKey;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -135,11 +143,16 @@ public class YarnServiceTest {
 
     // Start a dummy application manager so that the YarnService can use the AM-RM token.
     startApp();
+    HelixManager manager = Mockito.mock(HelixManager.class);
+    HelixDataAccessor dataAccessor = Mockito.mock(HelixDataAccessor.class);
+    Mockito.doReturn(null).when(dataAccessor).getProperty(Mockito.any(PropertyKey.class));
+    Mockito.doReturn(new PropertyKey.Builder("test")).when(dataAccessor).keyBuilder();
+    Mockito.doReturn(dataAccessor).when(manager).getHelixDataAccessor();
 
     // create and start the test yarn service
     this.yarnService = new TestYarnService(this.config, "testApp", "appId",
         this.clusterConf,
-        FileSystem.getLocal(new Configuration()), this.eventBus);
+        FileSystem.getLocal(new Configuration()), this.eventBus, manager);
 
    this.yarnService.startUp();
   }
@@ -244,9 +257,14 @@ public class YarnServiceTest {
   public void testReleasedContainerCache() throws Exception {
     Config modifiedConfig = this.config
         .withValue(GobblinYarnConfigurationKeys.RELEASED_CONTAINERS_CACHE_EXPIRY_SECS, ConfigValueFactory.fromAnyRef("2"));
+    HelixManager manager = Mockito.mock(HelixManager.class);
+    HelixDataAccessor dataAccessor = Mockito.mock(HelixDataAccessor.class);
+    Mockito.doReturn(null).when(dataAccessor).getProperty(Mockito.any(PropertyKey.class));
+    Mockito.doReturn(new PropertyKey.Builder("test")).when(dataAccessor).keyBuilder();
+    Mockito.doReturn(dataAccessor).when(manager).getHelixDataAccessor();
     TestYarnService yarnService =
         new TestYarnService(modifiedConfig, "testApp1", "appId1",
-            this.clusterConf, FileSystem.getLocal(new Configuration()), this.eventBus);
+            this.clusterConf, FileSystem.getLocal(new Configuration()), this.eventBus, manager);
 
     ContainerId containerId1 = ContainerId.newInstance(ApplicationAttemptId.newInstance(ApplicationId.newInstance(1, 0),
         0), 0);
@@ -265,10 +283,14 @@ public class YarnServiceTest {
     Config modifiedConfig = this.config
         .withValue(GobblinYarnConfigurationKeys.CONTAINER_JVM_MEMORY_OVERHEAD_MBS_KEY, ConfigValueFactory.fromAnyRef("10"))
         .withValue(GobblinYarnConfigurationKeys.CONTAINER_JVM_MEMORY_XMX_RATIO_KEY, ConfigValueFactory.fromAnyRef("0.8"));
-
+    HelixManager manager = Mockito.mock(HelixManager.class);
+    HelixDataAccessor dataAccessor = Mockito.mock(HelixDataAccessor.class);
+    Mockito.doReturn(null).when(dataAccessor).getProperty(Mockito.any(PropertyKey.class));
+    Mockito.doReturn(new PropertyKey.Builder("test")).when(dataAccessor).keyBuilder();
+    Mockito.doReturn(dataAccessor).when(manager).getHelixDataAccessor();
     TestYarnService yarnService =
         new TestYarnService(modifiedConfig, "testApp2", "appId2",
-            this.clusterConf, FileSystem.getLocal(new Configuration()), this.eventBus);
+            this.clusterConf, FileSystem.getLocal(new Configuration()), this.eventBus, manager);
 
     ContainerId containerId = ContainerId.newInstance(ApplicationAttemptId.newInstance(ApplicationId.newInstance(1, 0),
         0), 0);
@@ -283,8 +305,8 @@ public class YarnServiceTest {
 
    static class TestYarnService extends YarnService {
     public TestYarnService(Config config, String applicationName, String applicationId, YarnConfiguration yarnConfiguration,
-        FileSystem fs, EventBus eventBus) throws Exception {
-      super(config, applicationName, applicationId, yarnConfiguration, fs, eventBus, null);
+        FileSystem fs, EventBus eventBus, HelixManager manager) throws Exception {
+      super(config, applicationName, applicationId, yarnConfiguration, fs, eventBus, manager);
     }
 
     protected ContainerLaunchContext newContainerLaunchContext(Container container, String helixInstanceName)
