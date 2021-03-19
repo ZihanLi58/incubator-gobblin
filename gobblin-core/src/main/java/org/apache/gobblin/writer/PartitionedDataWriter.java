@@ -83,7 +83,7 @@ public class PartitionedDataWriter<S, D> extends WriterWrapper<D> implements Fin
   public static final String PARTITIONED_WRITER_CACHE_TTL_SECONDS = "partitionedDataWriter.cache.ttl.seconds";
   public static final Long DEFAULT_PARTITIONED_WRITER_CACHE_TTL_SECONDS = Long.MAX_VALUE;
   public static final String PARTITIONED_WRITER_WRITE_TIMEOUT_SECONDS = "partitionedDataWriter.write.timeout.seconds";
-  public static final Long DEFAULT_PARTITIONED_WRITER_WRITE_TIMEOUT_SECONDS = 480L;
+  public static final Long DEFAULT_PARTITIONED_WRITER_WRITE_TIMEOUT_SECONDS = Long.MAX_VALUE;
 
   private static final GenericRecord NON_PARTITIONED_WRITER_KEY =
       new GenericData.Record(SchemaBuilder.record("Dummy").fields().endRecord());
@@ -245,6 +245,7 @@ public class PartitionedDataWriter<S, D> extends WriterWrapper<D> implements Fin
     try {
       GenericRecord partition = getPartitionForRecord(recordEnvelope.getRecord());
       DataWriter<D> writer = this.partitionWriters.get(partition);
+      this.partitionWriters.invalidate();
       long startTime = System.currentTimeMillis();
       writer.writeEnvelope(recordEnvelope);
       long timeForWriting = System.currentTimeMillis() - startTime;
