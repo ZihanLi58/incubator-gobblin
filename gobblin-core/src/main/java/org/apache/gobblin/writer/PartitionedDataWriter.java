@@ -245,7 +245,6 @@ public class PartitionedDataWriter<S, D> extends WriterWrapper<D> implements Fin
     try {
       GenericRecord partition = getPartitionForRecord(recordEnvelope.getRecord());
       DataWriter<D> writer = this.partitionWriters.get(partition);
-      this.partitionWriters.invalidate();
       long startTime = System.currentTimeMillis();
       writer.writeEnvelope(recordEnvelope);
       long timeForWriting = System.currentTimeMillis() - startTime;
